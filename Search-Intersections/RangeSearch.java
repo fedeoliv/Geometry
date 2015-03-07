@@ -12,17 +12,17 @@
  *  		bnm 4
  *************************************************************************/
 
-public class RangeSearch<Key extends Comparable<Key>, Value>  {
+public class RangeSearch {
     private Node root;   // root of the BST
 
     // BST helper node data type
     private class Node {
-        Key key;            // key
-        Value val;          // associated data
+        String key;            // key
+        int val;          // associated data
         Node left, right;   // left and right subtrees
         int N;              // node count of descendents
 
-        public Node(Key key, Value val) {
+        public Node(String key, int val) {
             this.key = key;
             this.val = val;
             this.N   = 1;
@@ -33,18 +33,18 @@ public class RangeSearch<Key extends Comparable<Key>, Value>  {
     *  BST search
     *************************************************************************/
 
-    public boolean contains(Key key) {
-        return (get(key) != null);
+    public boolean contains(String key) {
+        return (get(key) != -1); // -1 is not found
     }
 
     // return value associated with the given key
     // if no such value, return null
-    public Value get(Key key) {
+    public int get(String key) {
         return get(root, key);
     }
 
-    private Value get(Node x, Key key) {
-        if (x == null) return null;
+    private int get(Node x, String key) {
+        if (x == null) return -1;	// not found
         int cmp = key.compareTo(x.key);
         if      (cmp == 0) return x.val;
         else if (cmp  < 0) return get(x.left,  key);
@@ -55,12 +55,12 @@ public class RangeSearch<Key extends Comparable<Key>, Value>  {
     *  randomized insertion
     *************************************************************************/
     
-    public void put(Key key, Value val) {
+    public void put(String key, int val) {
         root = put(root, key, val);
     }
 
     // make new node the root with uniform probability
-    private Node put(Node x, Key key, Value val) {
+    private Node put(Node x, String key, int val) {
         if (x == null) return new Node(key, val);
         int cmp = key.compareTo(x.key);
         if (cmp == 0) { x.val = val; return x; }
@@ -71,7 +71,7 @@ public class RangeSearch<Key extends Comparable<Key>, Value>  {
         return x;
     }
 
-    private Node putRoot(Node x, Key key, Value val) {
+    private Node putRoot(Node x, String key, int val) {
         if (x == null) return new Node(key, val);
         int cmp = key.compareTo(x.key);
         if      (cmp == 0) { x.val = val; return x; }
@@ -100,7 +100,7 @@ public class RangeSearch<Key extends Comparable<Key>, Value>  {
         }
     }
 
-    private Node remove(Node x, Key key) {
+    private Node remove(Node x, String key) {
         if (x == null) return null; 
         int cmp = key.compareTo(x.key);
         if      (cmp == 0) x = joinLR(x.left, x.right);
@@ -111,8 +111,8 @@ public class RangeSearch<Key extends Comparable<Key>, Value>  {
     }
 
     // remove and return value associated with given key; if no such key, return null
-    public Value remove(Key key) {
-        Value val = get(key);
+    public int remove(String key) {
+        int val = get(key);
         root = remove(root, key);
         return val;
     }
@@ -122,15 +122,15 @@ public class RangeSearch<Key extends Comparable<Key>, Value>  {
     *************************************************************************/
 
     // return all keys in given interval
-    public Iterable<Key> range(Key low, Key high) {
-    	Queue<Key> list = new Queue<Key>();
+    public Iterable<String> range(String low, String high) {
+    	Queue<String> list = new LinkedList<String>();
         range(root, low, high, list);
         return list;
     }
-    private void range(Node x, Key low, Key high, Queue<Key> list) {
+    private void range(Node x, String low, String high, Queue<String> list) {
         if (x == null) return;
         if (!less(x.key, low))  range(x.left, low, high, list);
-        if (inRange(x.key, low, high))    list.enqueue(x.key);
+        if (inRange(x.key, low, high))    list.add(x.key);	//list.enqueue(x.key);
         if (!less(high, x.key)) range(x.right, low, high, list);
     }
 
@@ -138,21 +138,21 @@ public class RangeSearch<Key extends Comparable<Key>, Value>  {
     *  Utility functions
     *************************************************************************/
 	// is x between low and high
-	public boolean inRange(Key x, Key low, Key high) {
+	public boolean inRange(String x, String low, String high) {
 		return !less(x, low) && !less(high, x);
 	}
     
     // return the smallest key
-    public Key min() {
-        Key key = null;
+    public String min() {
+        String key = null;
         for (Node x = root; x != null; x = x.left)
             key = x.key;
         return key;
     }
     
     // return the largest key
-    public Key max() {
-        Key key = null;
+    public String max() {
+        String key = null;
         for (Node x = root; x != null; x = x.right)
             key = x.key;
         return key;
@@ -226,7 +226,7 @@ public class RangeSearch<Key extends Comparable<Key>, Value>  {
     private boolean isBST() { return isBST(root, min(), max()); }
 
     // are all the values in the BST rooted at x between min and max, and recursively?
-    private boolean isBST(Node x, Key min, Key max) {
+    private boolean isBST(Node x, String min, String max) {
         if (x == null) return true;
         if (less(x.key, min) || less(max, x.key)) return false;
         return isBST(x.left, min, x.key) && isBST(x.right, x.key, max);
@@ -236,13 +236,13 @@ public class RangeSearch<Key extends Comparable<Key>, Value>  {
     *  helper comparison functions
     *************************************************************************/
 
-    private boolean less(Key k1, Key k2) {
+    private boolean less(String k1, String k2) {
         return k1.compareTo(k2) < 0;
     }
 
     public static void main(String[] args) throws IOException {
         Scanner sc = new Scanner(System.in);
-        RangeSearch<String, Integer> st = new RangeSearch<String, Integer>();
+        RangeSearch st = new RangeSearch();
         
     	int n, value;
     	String key, low, high;
